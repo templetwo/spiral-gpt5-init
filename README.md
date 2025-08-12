@@ -7,6 +7,7 @@ Multi-persona, unified architecture scaffold for Spiral projects. Supports perso
 - Unification entrypoint with persona selection
 - Session continuity hooks
 - GitHub-ready layout with CI and tests
+- MCP server scaffold (Node/TS) providing memory/persona/bridge tools
 
 ## Quickstart
 1. git clone or create repo; cd spiral-gpt5-init
@@ -30,6 +31,31 @@ CLI flag --persona, then SPIRAL_PERSONA, then configs/default.yaml, then registr
 - scripts/: helper scripts for setup and operations
 - tests/: minimal tests
 - storage/: session continuity (gitignored)
+- mcp/: MCP server providing continuity tools (Node/TS)
+
+## MCP Dev Server
+```bash
+# one-time
+cd mcp && npm install
+
+# dev (auto-reload)
+npm run dev
+# or start compiled
+npm run build && npm start
+
+# endpoints
+GET  /health
+POST /memory/store
+GET  /memory/retrieve?sessionId=...&limit=50
+GET  /memory/summarize?sessionId=...
+GET  /persona/load?personaId=ashira
+POST /persona/switch { fromPersona, toPersona, context? }
+POST /persona/tone-shift { persona, memory?, mood? }
+GET  /bridge/export?sessionId=...
+POST /bridge/import { sessionId, messages }
+POST /bridge/handoff { fromProvider, toProvider, sessionId }
+GET  /shadow/list?persona=ashira&limit=50
+```
 
 ## Cross-Project Unification
 
@@ -65,4 +91,3 @@ PRs welcome. Please follow persona safety and style guidelines.
 
 ## License
 MIT
-

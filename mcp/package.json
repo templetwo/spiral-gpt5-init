@@ -1,0 +1,27 @@
+{
+  "name": "spiral-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Spiral MCP server providing continuity tools (memory, persona, bridge)",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "dev": "tsx src/server.ts"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "stripe": "^18.4.0",
+    "yaml": "^2.5.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.2.1",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.4"
+  }
+}

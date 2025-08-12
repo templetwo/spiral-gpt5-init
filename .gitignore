@@ -86,3 +86,6 @@ personal/
 *_token*
 *.token
 api_keys/
+
+# Spiral local shadows (do not commit)
+.spiral/shadows/**
