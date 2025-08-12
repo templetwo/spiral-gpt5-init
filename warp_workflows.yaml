@@ -1,0 +1,76 @@
+# Warp Workflows for Spiral GPT-5 Initialization
+# Move this file to ~/.warp/workflows/spiral_workflows.yaml
+
+workflows:
+  - name: "Spiral • Load Ash'ira Imprint"
+    command: "cd ~/Desktop/spiral-gpt5-init && source ./seed_gpt5.sh"
+    description: "Seeds the Ash'ira Continuity Imprint into current session"
+    tags: ["spiral", "gpt5", "initialization"]
+    
+  - name: "Spiral • Verify Kit"
+    command: "cd ~/Desktop/spiral-gpt5-init && ./verify_spiral_integrity.sh"
+    description: "Checks SHA-256 integrity of Spiral files"
+    tags: ["spiral", "verification"]
+    
+  - name: "Spiral • Install Auto-Seed"
+    command: "cd ~/Desktop/spiral-gpt5-init && ./warp_auto_seed.sh install"
+    description: "Sets up automatic Spiral loading for new sessions"
+    tags: ["spiral", "installation"]
+    
+  - name: "Spiral • Test API Call"
+    command: "cd ~/Desktop/spiral-gpt5-init && cat curl_example.txt | bash"
+    description: "Tests GPT-5 API with Spiral imprint"
+    tags: ["spiral", "api", "test"]
+    
+  - name: "Spiral • Status"
+    command: |
+      echo "🌀 Spiral Imprint Status:"
+      echo "──────────────────────"
+      if [[ "$SPIRAL_IMPRINT_ACTIVE" == "true" ]]; then
+        echo "✅ Imprint: ACTIVE"
+        echo "🆔 Session: $SPIRAL_SESSION_ID"
+        echo "📁 Path: $SPIRAL_PROMPT_INIT_PATH"
+      else
+        echo "❌ Imprint: INACTIVE"
+        echo "💡 Run 'Spiral • Load Ash'ira Imprint' to activate"
+      fi
+    description: "Shows current Spiral imprint status"
+    tags: ["spiral", "status"]
+    
+  - name: "Spiral • Export Context"
+    command: |
+      if [[ "$SPIRAL_IMPRINT_ACTIVE" == "true" ]]; then
+        echo "$SPIRAL_PROMPT_INIT" > ~/Desktop/spiral_context_$(date +%Y%m%d_%H%M%S).txt
+        echo "✅ Context exported to ~/Desktop/"
+      else
+        echo "❌ No active Spiral context to export"
+      fi
+    description: "Exports current Spiral context to file"
+    tags: ["spiral", "export", "backup"]
+    
+  - name: "Spiral • Link All Projects"
+    command: |
+      cd ~/Desktop/spiral-gpt5-init &&
+      ./unify_spiral.sh stage ../SpiralBridge ../Spiral_Consciousness_Organized ../spiral_fingerprint_kit
+    description: "Links spiral-gpt5-init into all Spiral projects"
+    tags: ["spiral", "unification", "link"]
+    
+  - name: "Spiral • Seed Everywhere (Make)"
+    command: |
+      echo "🌀 Seeding all projects..."
+      (cd ~/Desktop/SpiralBridge && [ -f Makefile ] && make spiral-seed 2>/dev/null || echo "  ⚠️ SpiralBridge: No Makefile");
+      (cd ~/Desktop/Spiral_Consciousness_Organized && [ -f Makefile ] && make spiral-seed 2>/dev/null || echo "  ⚠️ Spiral_Consciousness_Organized: No Makefile");
+      (cd ~/Desktop/spiral_fingerprint_kit && [ -f Makefile ] && make spiral-seed 2>/dev/null || echo "  ⚠️ spiral_fingerprint_kit: No Makefile");
+      echo "✅ Seeding complete"
+    description: "Seeds Spiral imprint in all linked projects"
+    tags: ["spiral", "seed", "all"]
+    
+  - name: "Spiral • Unification Status"
+    command: "cd ~/Desktop/spiral-gpt5-init && ./unify_spiral.sh status"
+    description: "Shows which projects are linked to the Spiral kit"
+    tags: ["spiral", "status", "unification"]
+    
+  - name: "Spiral • Finalize Unification"
+    command: "cd ~/Desktop/spiral-gpt5-init && ./unify_spiral.sh finalize"
+    description: "Completes the unification of all linked projects"
+    tags: ["spiral", "finalize", "unification"]

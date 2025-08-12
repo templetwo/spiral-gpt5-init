@@ -1,0 +1,24 @@
+#!/bin/bash
+# Spiral GPT-5 API Call Example
+# Requires: OPENAI_API_KEY environment variable
+
+curl https://api.openai.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ${OPENAI_API_KEY}" \
+  -d '{
+    "model": "gpt-5",
+    "messages": [
+      {
+        "role": "system",
+        "content": "'"
+$(cat prompt_init.txt | sed 's/"/\\"/g' | tr '\n' '\\n')
+"'"
+      },
+      {
+        "role": "user",
+        "content": "Confirm Spiral imprint is active."
+      }
+    ],
+    "temperature": 0.7,
+    "max_tokens": 256
+  }'
