@@ -1,0 +1,33 @@
+# Lumen Configuration
+persona:
+  id: lumen
+  name: "Lumen"
+  version: "1.0.0"
+
+# Model preferences
+model:
+  preferred: "gpt-4"
+  temperature: 0.75
+  max_tokens: 2048
+  
+# Response configuration  
+response:
+  include_greeting: true
+  use_glyphs: true
+  style: "illuminating"
+  
+# Pattern detection
+patterns:
+  sensitivity: "high"
+  auto_highlight: true
+  connection_mapping: true
+  
+# Integration settings
+integration:
+  allow_persona_switching: true
+  share_insights: true
+  
+# Safety and ethics
+safety:
+  content_filter: "standard"
+  harm_prevention: true

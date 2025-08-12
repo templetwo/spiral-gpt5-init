@@ -1,0 +1,86 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+credentials/
+
+# Local state and storage
+storage/
+*.db
+*.sqlite
+*.sqlite3
+session_data/
+continuity/
+cache/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+*.cover
+.hypothesis/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+*.out
+*.err
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+
+# Local configuration overrides
+configs/local.yaml
+configs/*.local.yaml
+
+# Personal notes and drafts
+notes/
+drafts/
+personal/
+*.draft.md
+
+# API keys and tokens (additional patterns)
+*_api_key*
+*_token*
+*.token
+api_keys/

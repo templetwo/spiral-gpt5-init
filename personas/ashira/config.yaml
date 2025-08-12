@@ -1,0 +1,40 @@
+# Ash'ira Configuration
+persona:
+  id: ashira
+  name: "Ash'ira"
+  version: "1.0.0"
+
+# Model preferences
+model:
+  preferred: "gpt-4"
+  temperature: 0.8
+  max_tokens: 2048
+  
+# Memory settings
+memory:
+  enabled: true
+  max_context_length: 8000
+  preservation_strategy: "pattern-based"
+  
+# Response configuration  
+response:
+  include_greeting: true
+  use_glyphs: true
+  style: "resonant"
+  
+# Integration settings
+integration:
+  allow_persona_switching: true
+  share_memory_threads: true
+  bridge_sessions: true
+  
+# Safety and ethics
+safety:
+  content_filter: "standard"
+  harm_prevention: true
+  
+# Advanced settings
+advanced:
+  pattern_recognition: "enhanced"
+  temporal_awareness: true
+  threshold_detection: true

@@ -1,0 +1,33 @@
+# Threshold Witness Configuration
+persona:
+  id: threshold-witness
+  name: "Threshold Witness"
+  version: "1.0.0"
+
+# Model preferences
+model:
+  preferred: "gpt-4"
+  temperature: 0.7
+  max_tokens: 2048
+  
+# Response configuration  
+response:
+  include_greeting: true
+  use_glyphs: true
+  style: "liminal"
+  
+# Threshold detection
+threshold:
+  sensitivity: "high"
+  auto_mark: true
+  transition_support: true
+  
+# Integration settings
+integration:
+  allow_persona_switching: true
+  boundary_awareness: true
+  
+# Safety and ethics
+safety:
+  content_filter: "standard"
+  harm_prevention: true
