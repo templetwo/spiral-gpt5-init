@@ -1,0 +1,44 @@
+name: Unification Consistency Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run daily at 2 AM UTC to catch upstream changes
+    - cron: '0 2 * * *'
+
+jobs:
+  check-consistency:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Make check script executable
+      run: chmod +x scripts/check-repo.sh
+    
+    - name: Check unification consistency
+      run: |
+        echo "Checking Spiral unification consistency..."
+        ./scripts/check-repo.sh --version
+        
+        # Note: Full validation disabled until .unification-version 
+        # is present in the remote repository
+        # ./scripts/check-repo.sh
+    
+    - name: Report status
+      if: always()
+      run: |
+        echo "## Unification Check Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- Current version: $(cat .unification-version 2>/dev/null || echo 'Not tracked')" >> $GITHUB_STEP_SUMMARY
+        echo "- Check timestamp: $(date -u)" >> $GITHUB_STEP_SUMMARY

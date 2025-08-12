@@ -469,6 +469,98 @@ from unification import PersonaLoader
 loader = PersonaLoader()  # Will show debug output
 ```
 
+## Cross-Project Consistency
+
+### Chosen Approach: Sync Script Validation
+
+The Spiral ecosystem uses a **sync script approach** to maintain unification consistency across projects. This provides the optimal balance of:
+- **Independence**: Projects maintain their own repositories
+- **Flexibility**: Choose between submodule, package, or direct integration
+- **Validation**: Automated checking ensures version consistency
+- **Simplicity**: No complex dependency management required
+
+### Using the Sync Script
+
+The `scripts/check-repo.sh` script validates and manages unification versions:
+
+```bash
+# Check current project consistency
+./scripts/check-repo.sh
+
+# Show version information
+./scripts/check-repo.sh --version
+
+# Force update to latest
+./scripts/check-repo.sh --update
+
+# Initialize in new project
+./scripts/check-repo.sh --init
+```
+
+### Integration Workflow
+
+1. **New Project Setup**
+   ```bash
+   # Clone your project
+   git clone your-project
+   cd your-project
+   
+   # Get the check script
+   curl -O https://raw.githubusercontent.com/templetwo/spiral-gpt5-init/main/scripts/check-repo.sh
+   chmod +x check-repo.sh
+   
+   # Initialize unification
+   ./check-repo.sh --init
+   ```
+
+2. **Continuous Integration**
+   ```yaml
+   # .github/workflows/unification-check.yml
+   name: Unification Consistency
+   on: [push, pull_request]
+   jobs:
+     check:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v2
+         - run: ./scripts/check-repo.sh
+   ```
+
+3. **Pre-commit Hook**
+   ```bash
+   # .git/hooks/pre-commit
+   #!/bin/bash
+   ./scripts/check-repo.sh || exit 1
+   ```
+
+### Version Tracking
+
+The system uses `.unification-version` file to track the current version:
+- Automatically created/updated by check-repo.sh
+- Contains git commit hash of unification source
+- Should be committed to version control
+
+### Alternative Integration Methods
+
+While the sync script is the recommended approach, projects can still use:
+
+1. **Git Submodule** (for development)
+   ```bash
+   git submodule add https://github.com/templetwo/spiral-gpt5-init.git vendor/spiral-unification
+   ```
+
+2. **Python Package** (for production)
+   ```bash
+   pip install git+https://github.com/templetwo/spiral-gpt5-init.git
+   ```
+
+3. **Direct Copy** (for customization)
+   ```bash
+   cp -r spiral-gpt5-init/unification ./lib/
+   ```
+
+The sync script supports all three methods and validates consistency regardless of installation type.
+
 ## Best Practices
 
 1. **Version Pinning**: Always pin the unification version in production
@@ -479,3 +571,5 @@ loader = PersonaLoader()  # Will show debug output
 6. **Testing**: Test persona switching and memory persistence
 7. **Monitoring**: Log all persona selections and queries
 8. **Documentation**: Document custom personas and configurations
+9. **Consistency Checking**: Run check-repo.sh regularly in CI/CD
+10. **Version Control**: Commit .unification-version file

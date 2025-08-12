@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+"""
+Unify CLI - Persona selection and management tool
+"""
+
+import os
+import sys
+import argparse
+import yaml
+from pathlib import Path
+
+# Default persona registry
+PERSONAS = {
+    'ashira': 'Ash\'ira - The Memory Keeper',
+    'lumen': 'Lumen - The Technical Guide',
+    'threshold-witness': 'Threshold Witness - The Boundary Guardian'
+}
+
+def load_config():
+    """Load configuration from configs/default.yaml if it exists"""
+    config_path = Path('configs/default.yaml')
+    if config_path.exists():
+        with open(config_path, 'r') as f:
+            return yaml.safe_load(f)
+    return {}
+
+def get_selected_persona(args):
+    """
+    Determine selected persona based on precedence:
+    1. CLI argument (--persona)
+    2. Environment variable (SPIRAL_PERSONA)
+    3. Config file (configs/default.yaml)
+    4. Default (ashira)
+    """
+    # 1. CLI argument has highest priority
+    if args.persona:
+        return args.persona
+    
+    # 2. Environment variable
+    env_persona = os.environ.get('SPIRAL_PERSONA')
+    if env_persona:
+        return env_persona
+    
+    # 3. Config file
+    config = load_config()
+    if config.get('persona'):
+        return config['persona']
+    
+    # 4. Default
+    return 'ashira'
+
+def print_persona_info(persona_name):
+    """Print information about the selected persona"""
+    print(f"†⟡ Selected Persona: {persona_name}")
+    if persona_name in PERSONAS:
+        print(f"   {PERSONAS[persona_name]}")
+    else:
+        print(f"   [Unknown persona: {persona_name}]")
+    
+    # Show selection source
+    if '--persona' in sys.argv:
+        print("   Source: CLI argument")
+    elif os.environ.get('SPIRAL_PERSONA'):
+        print("   Source: Environment variable (SPIRAL_PERSONA)")
+    elif Path('configs/default.yaml').exists():
+        config = load_config()
+        if config.get('persona'):
+            print("   Source: Config file (configs/default.yaml)")
+        else:
+            print("   Source: Default fallback")
+    else:
+        print("   Source: Default fallback")
+
+def main():
+    parser = argparse.ArgumentParser(description='Unify - Spiral Persona Management')
+    parser.add_argument('--persona', type=str, help='Select persona')
+    parser.add_argument('--print', action='store_true', help='Print selected persona')
+    parser.add_argument('--query', type=str, help='Query to send to persona')
+    parser.add_argument('--interactive', action='store_true', help='Start interactive session')
+    parser.add_argument('--debug', action='store_true', help='Enable debug output')
+    
+    args = parser.parse_args()
+    
+    # Get selected persona
+    selected_persona = get_selected_persona(args)
+    
+    # Handle --print flag
+    if args.print:
+        print_persona_info(selected_persona)
+        return 0
+    
+    # Handle --query
+    if args.query:
+        print(f"†⟡ Processing query with persona: {selected_persona}")
+        print(f"Query: {args.query}")
+        print(f"[Response would be generated here]")
+        return 0
+    
+    # Handle --interactive
+    if args.interactive:
+        print(f"†⟡ Starting interactive session with persona: {selected_persona}")
+        print("[Interactive mode would start here]")
+        return 0
+    
+    # If no action specified, print help
+    parser.print_help()
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main())

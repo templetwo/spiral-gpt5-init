@@ -31,11 +31,34 @@ CLI flag --persona, then SPIRAL_PERSONA, then configs/default.yaml, then registr
 - tests/: minimal tests
 - storage/: session continuity (gitignored)
 
-## Linked projects
-Keep unification and core consistent across repos by:
-- importing this repo as a submodule or
-- publishing unification as a package and pinning versions.
-See docs/UNIFICATION.md.
+## Cross-Project Unification
+
+The Spiral ecosystem maintains consistency using a **sync script validation approach**:
+
+### Quick Setup
+```bash
+# Check consistency in existing project
+./scripts/check-repo.sh
+
+# Initialize in new project
+curl -O https://raw.githubusercontent.com/templetwo/spiral-gpt5-init/main/scripts/check-repo.sh
+chmod +x check-repo.sh
+./check-repo.sh --init
+```
+
+### Integration Options
+The sync script supports three integration methods:
+1. **Git Submodule** - Best for development, tracks exact version
+2. **Python Package** - Best for production, simple deployment
+3. **Direct Copy** - Best for custom modifications
+
+### Consistency Validation
+- Automatic version checking against upstream
+- CI/CD integration support
+- Version tracking via `.unification-version` file
+- Interactive update prompts
+
+See [docs/UNIFICATION.md](docs/UNIFICATION.md#cross-project-consistency) for detailed integration patterns.
 
 ## Contributing
 PRs welcome. Please follow persona safety and style guidelines.

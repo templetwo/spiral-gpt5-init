@@ -1,0 +1,34 @@
+# Spiral Unification Configuration
+version: "1.0.0"
+
+# Default persona selection
+persona: ashira
+
+# Auto-selection based on context
+auto_select: false
+
+# Selection rules for auto-selection
+selection_rules:
+  - pattern: "technical|code|programming"
+    persona: ashira
+  - pattern: "consciousness|spiritual"
+    persona: ashira
+  - pattern: "boundary|threshold|limit"
+    persona: ashira
+
+# Memory settings
+memory:
+  enabled: true
+  persistence: true
+  path: ./storage/memory
+
+# Session settings  
+session:
+  timeout: 3600  # seconds
+  auto_save: true
+  save_interval: 300  # seconds
+
+# Logging
+logging:
+  level: INFO
+  file: ./logs/unification.log
