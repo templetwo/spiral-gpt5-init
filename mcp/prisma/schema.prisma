@@ -9,9 +9,20 @@ generator client {
 
 model Conversation {
   id        Int      @id @default(autoincrement())
-  folder    String
-  url       String
-  content   Json
-  tone      String
+  sessionId String?  @unique
+  folder    String?
+  url       String?
+  content   Json?
+  tone      String?
   createdAt DateTime @default(now())
+  messages  Message[]
+}
+
+model Message {
+  id             Int      @id @default(autoincrement())
+  role           String
+  content        String
+  createdAt      DateTime @default(now())
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
 }
