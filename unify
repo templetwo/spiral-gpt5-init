@@ -50,7 +50,14 @@ def print_persona_info(persona_name):
 
 def bridge_import(args):
     """Handler for 'unify bridge import' command"""
-    print(f"†⟡ Importing conversation from: {args.url}")
+    # Offline validation as requested
+    if not args.url.startswith(('http://', 'https://')):
+        print("   ✗ Error: Invalid URL format. Must start with http:// or https://")
+        sys.exit(1)
+
+    print(f"†⟡ URL validated. Attempting to import conversation from: {args.url}")
+    print(f"   Connecting to MCP server at {MCP_URL}...")
+
     try:
         response = requests.post(f"{MCP_URL}/bridge/import", json={"url": args.url})
         response.raise_for_status()
