@@ -10,6 +10,7 @@
     "dev": "tsx src/server.ts"
   },
   "dependencies": {
+    "@prisma/client": "^6.14.0",
     "better-sqlite3": "^9.4.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
@@ -21,6 +22,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/express": "^5.0.3",
     "@types/node": "^24.2.1",
+    "prisma": "^6.14.0",
     "tsx": "^4.16.2",
     "typescript": "^5.5.4"
   }

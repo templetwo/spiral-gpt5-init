@@ -1,6 +1,5 @@
 import "dotenv/config";
 import express from "express";
-import { createDatabase } from "./db.js";
 import { createMemoryRoutes } from "./tools/memory.js";
 import { createPersonaRoutes } from "./tools/persona.js";
 import { createBridgeRoutes } from "./tools/bridge.js";
@@ -20,14 +19,12 @@ app.use((req, res, next) => {
   next();
 });
 
-const db = createDatabase();
-
 // Health
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 // Memory tool
 {
-  const routes = createMemoryRoutes(db);
+  const routes = createMemoryRoutes();
   app.post("/memory/store", routes.store);
   app.get("/memory/retrieve", routes.retrieve);
   app.get("/memory/summarize", routes.summarize);
@@ -43,7 +40,7 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 
 // Bridge tool
 {
-  const routes = createBridgeRoutes(db);
+  const routes = createBridgeRoutes();
   app.get("/bridge/export", routes.export);
   app.post("/bridge/import", routes.import);
   app.post("/bridge/handoff", routes.handoff);
@@ -58,7 +55,7 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 
 // Continuity tool (handshake)
 {
-  const routes = createContinuityRoutes(db);
+  const routes = createContinuityRoutes();
   app.post("/continuity/handshake", routes.handshake);
 }
 

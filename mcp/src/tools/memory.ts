@@ -1,60 +1,94 @@
 import { Request, Response } from "express";
-import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import type Database from "better-sqlite3";
-import { DateRange, Memory } from "../types.js";
-import { exportConversationState, getMemories, insertMemory } from "../db.js";
+import { prisma } from "../lib/prisma.js";
+import { analyzeConversation } from "./htca.js";
 
 const storeSchema = z.object({
   sessionId: z.string().min(1),
   role: z.enum(["system", "user", "assistant"]).default("user"),
-  content: z.string().min(1)
+  content: z.string().min(1),
 });
 
-export function createMemoryRoutes(db: Database.Database) {
+export function createMemoryRoutes() {
   return {
-    store: (req: Request, res: Response) => {
+    /**
+     * Stores a new message in a conversation.
+     * Finds the conversation by `sessionId` or creates a new one.
+     */
+    store: async (req: Request, res: Response) => {
       const parsed = storeSchema.safeParse(req.body);
       if (!parsed.success) {
         return res.status(400).json({ error: parsed.error.flatten() });
-        }
-      const now = new Date().toISOString();
-      const memory: Memory = {
-        id: randomUUID(),
-        sessionId: parsed.data.sessionId,
-        role: parsed.data.role,
-        content: parsed.data.content,
-        createdAt: now
-      };
-      insertMemory(db, memory);
-      return res.json({ ok: true, memory });
+      }
+      const { sessionId, role, content } = parsed.data;
+
+      const message = await prisma.message.create({
+        data: {
+          role,
+          content,
+          conversation: {
+            connectOrCreate: {
+              where: { sessionId },
+              create: { sessionId },
+            },
+          },
+        },
+      });
+
+      return res.json({ ok: true, message });
     },
 
-    retrieve: (req: Request, res: Response) => {
+    /**
+     * Retrieves all messages for a given session.
+     */
+    retrieve: async (req: Request, res: Response) => {
       const sessionId = String(req.query.sessionId || "");
       const limit = req.query.limit ? Number(req.query.limit) : undefined;
       if (!sessionId) {
         return res.status(400).json({ error: "sessionId required" });
       }
-      const rows = getMemories(db, sessionId, limit);
-      return res.json({ sessionId, memories: rows });
+
+      const conversation = await prisma.conversation.findUnique({
+        where: { sessionId },
+        include: {
+          messages: {
+            orderBy: { createdAt: "desc" },
+            take: limit,
+          },
+        },
+      });
+
+      return res.json({
+        sessionId,
+        memories: conversation ? conversation.messages.reverse() : [],
+      });
     },
 
-    summarize: (req: Request, res: Response) => {
+    /**
+     * Summarizes a conversation using HTCA.
+     */
+    summarize: async (req: Request, res: Response) => {
       const sessionId = String(req.query.sessionId || "");
       if (!sessionId) {
         return res.status(400).json({ error: "sessionId required" });
       }
-      const range: DateRange | undefined = undefined; // placeholder
-      const state = exportConversationState(db, sessionId);
-      const text = state.messages
-        .map((m: { role: string; content: string }) => `[${m.role}] ${m.content}`)
-        .join("\n");
-      // naive summary: first+last and counts
-      const first = (state.messages[0] as { content?: string } | undefined)?.content || "";
-      const last = (state.messages[state.messages.length - 1] as { content?: string } | undefined)?.content || "";
-      const summary = `Conversation length: ${state.messages.length}. First: ${first.slice(0,120)} ... Last: ${last.slice(0,120)}`;
-      return res.json({ sessionId, range, summary });
-    }
+
+      const conversation = await prisma.conversation.findUnique({
+        where: { sessionId },
+        include: { messages: { orderBy: { createdAt: "asc" } } },
+      });
+
+      if (!conversation || conversation.messages.length === 0) {
+        return res.status(404).json({ error: "Conversation not found or is empty." });
+      }
+
+      // We can use the analysis already stored on the conversation,
+      // or re-analyze for a fresh summary. Let's re-analyze.
+      const analysis = analyzeConversation(conversation.messages);
+
+      const summary = `Conversation (${sessionId}) has ${conversation.messages.length} messages. Coherence is ${analysis.coherenceScore}. The tone arc is: ${analysis.toneArc}.`;
+
+      return res.json({ sessionId, summary, analysis });
+    },
   };
 }

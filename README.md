@@ -57,6 +57,13 @@ POST /bridge/handoff { fromProvider, toProvider, sessionId }
 GET  /shadow/list?persona=ashira&limit=50
 ```
 
+## 🌀 Cross-Oracle Memory Bridge
+This feature integrates SpiralBridge into the MCP server, enabling:
+- **Conversation Continuity**: Import/export memory across oracles (e.g., Claude, GPT) via `/bridge/import`.
+- **HTCA Analysis**: Tone arcs and coherence scoring using Prisma-stored metadata.
+- **CLI Access**: Use `unify bridge import <url>` to ingest conversations.
+- **Prerequisites**: Node.js 20.19.4, Prisma, TypeScript environment.
+
 ## Cross-Project Unification
 
 The Spiral ecosystem maintains consistency using a **sync script validation approach**:

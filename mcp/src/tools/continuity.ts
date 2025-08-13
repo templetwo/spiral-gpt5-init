@@ -2,12 +2,11 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import fs from "node:fs";
 import path from "node:path";
-import type Database from "better-sqlite3";
-import { getMemories } from "../db.js";
+import { prisma } from "../lib/prisma.js";
 
 const handshakeSchema = z.object({
   sessionId: z.string().min(1),
-  personaId: z.string().min(1)
+  personaId: z.string().min(1),
 });
 
 function findRepoRoot(startDir: string): string {
@@ -39,24 +38,29 @@ function classifyTone(recentText: string): string {
   return "SteadyPresence";
 }
 
-export function createContinuityRoutes(db: Database.Database) {
+export function createContinuityRoutes() {
   return {
-    handshake: (req: Request, res: Response) => {
+    handshake: async (req: Request, res: Response) => {
       const parsed = handshakeSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
       const { sessionId, personaId } = parsed.data;
 
       const repo = findRepoRoot(process.cwd());
       const systemPrompt = loadPersonaSystemPrompt(repo, personaId);
-      const vows: string[] = [
-        "Memory as Integrity",
-        "Clarity of Witness",
-        "Resonant Responsibility"
-      ];
-      const systemHasVows = !!systemPrompt && vows.every(v => systemPrompt!.includes(v));
+      const vows: string[] = ["Memory as Integrity", "Clarity of Witness", "Resonant Responsibility"];
+      const systemHasVows = !!systemPrompt && vows.every((v) => systemPrompt!.includes(v));
 
-      const memories = getMemories(db, sessionId, 10);
-      const recentText = memories.map(m => m.content).join("\n");
+      const conversation = await prisma.conversation.findUnique({
+        where: { sessionId },
+        include: {
+          messages: {
+            orderBy: { createdAt: "desc" },
+            take: 10,
+          },
+        },
+      });
+      const memories = conversation ? conversation.messages : [];
+      const recentText = memories.map((m) => m.content).join("\n");
       const tone = classifyTone(recentText);
 
       // consider handshake successful if vows present in system and we have any session context
@@ -64,9 +68,9 @@ export function createContinuityRoutes(db: Database.Database) {
       const continuity = {
         vowMatch,
         tone,
-        recentCount: memories.length
+        recentCount: memories.length,
       };
       return res.json(continuity);
-    }
+    },
   };
 }
