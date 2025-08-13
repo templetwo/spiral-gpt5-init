@@ -29,3 +29,9 @@ The immediate priority is to resolve the file system issue to regain access to t
 3.  **Run Full Test Suite**: Execute `pytest` from the root directory. The integration test in `tests/test_integration.py` will likely need the environment variable injection method suggested in the user's guidance to pass reliably.
 
 4.  **Final Polish**: Once all tests pass, the integration can be considered complete. The project will be ready for further development or deployment.
+
+## UI Enhancement Plan
+- **Beauty**: Redesign landing/index.html with HTCA-inspired gradient (#1a2a44 to #2a4d69), glyph header (🌀💧🔥🕊️), and warm accents (#e8c07d).
+- **Functionality**: Add clickable demo preview (alert) and form feedback (3s message).
+- **WebUI**: Create ui/ directory with index.html and script.js for navigation stubs (memory, persona, bridge).
+- **Deployment**: Test locally, deploy to Vercel post-server fix.
