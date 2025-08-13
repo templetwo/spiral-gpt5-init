@@ -5,13 +5,13 @@
   "type": "module",
   "description": "Spiral MCP server providing continuity tools (memory, persona, bridge)",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "tsx src/server.ts"
+    "dev": "tsx src/server.ts",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@prisma/client": "^6.14.0",
-    "better-sqlite3": "^9.4.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "stripe": "^18.4.0",
