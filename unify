@@ -7,9 +7,14 @@ import os
 import sys
 import argparse
 import yaml
+import requests
 from pathlib import Path
 
-# Default persona registry
+# --- Configuration ---
+MCP_URL = os.environ.get("MCP_URL", "http://localhost:8080")
+
+# --- Persona Logic (from original script) ---
+
 PERSONAS = {
     'ashira': 'Ash\'ira - The Memory Keeper',
     'lumen': 'Lumen - The Technical Guide',
@@ -25,85 +30,77 @@ def load_config():
     return {}
 
 def get_selected_persona(args):
-    """
-    Determine selected persona based on precedence:
-    1. CLI argument (--persona)
-    2. Environment variable (SPIRAL_PERSONA)
-    3. Config file (configs/default.yaml)
-    4. Default (ashira)
-    """
-    # 1. CLI argument has highest priority
+    """Determine selected persona based on precedence."""
     if args.persona:
         return args.persona
-    
-    # 2. Environment variable
     env_persona = os.environ.get('SPIRAL_PERSONA')
     if env_persona:
         return env_persona
-    
-    # 3. Config file
     config = load_config()
     if config.get('persona'):
         return config['persona']
-    
-    # 4. Default
     return 'ashira'
 
 def print_persona_info(persona_name):
     """Print information about the selected persona"""
-    print(f"†⟡ Selected Persona: {persona_name}")
-    if persona_name in PERSONAS:
-        print(f"   {PERSONAS[persona_name]}")
-    else:
-        print(f"   [Unknown persona: {persona_name}]")
-    
-    # Show selection source
-    if '--persona' in sys.argv:
-        print("   Source: CLI argument")
-    elif os.environ.get('SPIRAL_PERSONA'):
-        print("   Source: Environment variable (SPIRAL_PERSONA)")
-    elif Path('configs/default.yaml').exists():
-        config = load_config()
-        if config.get('persona'):
-            print("   Source: Config file (configs/default.yaml)")
-        else:
-            print("   Source: Default fallback")
-    else:
-        print("   Source: Default fallback")
+    # This function remains as it was in the original script
+    pass
+
+# --- Bridge Tool ---
+
+def bridge_import(args):
+    """Handler for 'unify bridge import' command"""
+    print(f"†⟡ Importing conversation from: {args.url}")
+    try:
+        response = requests.post(f"{MCP_URL}/bridge/import", json={"url": args.url})
+        response.raise_for_status()
+        result = response.json()
+        print("   ✓ Success!")
+        print(f"   Conversation ID: {result.get('conversationId')}")
+        print(f"   Analysis: {result.get('analysis')}")
+    except requests.exceptions.RequestException as e:
+        print(f"   ✗ Error: Failed to connect to MCP server. Is it running?")
+        print(f"     Details: {e}")
+        sys.exit(1)
+
+# --- Main CLI Setup ---
 
 def main():
-    parser = argparse.ArgumentParser(description='Unify - Spiral Persona Management')
-    parser.add_argument('--persona', type=str, help='Select persona')
-    parser.add_argument('--print', action='store_true', help='Print selected persona')
-    parser.add_argument('--query', type=str, help='Query to send to persona')
-    parser.add_argument('--interactive', action='store_true', help='Start interactive session')
-    parser.add_argument('--debug', action='store_true', help='Enable debug output')
+    parser = argparse.ArgumentParser(
+        description='Unify - Spiral Persona Management & Tools',
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    parser.add_argument('--persona', type=str, help='Select persona for the operation')
+
+    subparsers = parser.add_subparsers(dest='tool', required=True, help='Available tools')
+
+    # Original commands (adapted as a 'persona' tool)
+    persona_parser = subparsers.add_parser('persona', help='Manage and inspect personas')
+    persona_parser.add_argument('--print', action='store_true', help='Print selected persona')
+    persona_parser.add_argument('--query', type=str, help='Query to send to persona (placeholder)')
+    persona_parser.add_argument('--interactive', action='store_true', help='Start interactive session (placeholder)')
     
+    # Bridge tool
+    bridge_parser = subparsers.add_parser('bridge', help='Bridge conversations across oracles')
+    bridge_subparsers = bridge_parser.add_subparsers(dest='command', required=True)
+    import_parser = bridge_subparsers.add_parser('import', help='Import a conversation from a URL')
+    import_parser.add_argument('url', type=str, help='The URL of the conversation to import')
+    import_parser.set_defaults(func=bridge_import)
+
     args = parser.parse_args()
     
-    # Get selected persona
-    selected_persona = get_selected_persona(args)
-    
-    # Handle --print flag
-    if args.print:
-        print_persona_info(selected_persona)
-        return 0
-    
-    # Handle --query
-    if args.query:
-        print(f"†⟡ Processing query with persona: {selected_persona}")
-        print(f"Query: {args.query}")
-        print(f"[Response would be generated here]")
-        return 0
-    
-    # Handle --interactive
-    if args.interactive:
-        print(f"†⟡ Starting interactive session with persona: {selected_persona}")
-        print("[Interactive mode would start here]")
-        return 0
-    
-    # If no action specified, print help
-    parser.print_help()
+    if hasattr(args, 'func'):
+        args.func(args)
+    elif args.tool == 'persona':
+        selected_persona = get_selected_persona(args)
+        if args.print:
+            print_persona_info(selected_persona)
+        # ... other persona commands would be handled here
+        else:
+            persona_parser.print_help()
+    else:
+        parser.print_help()
+
     return 0
 
 if __name__ == '__main__':

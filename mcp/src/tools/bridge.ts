@@ -1,25 +1,71 @@
 import { Request, Response } from "express";
-import type Database from "better-sqlite3";
-import { exportConversationState } from "../db.js";
-import { ConversationState } from "../types.js";
+import { z } from "zod";
+import { prisma } from "../lib/prisma.js";
+import { parseConversationFromUrl } from "./oracle_parser.js";
+import { analyzeConversation } from "./htca.js";
 
-export function createBridgeRoutes(db: Database.Database) {
+const importSchema = z.object({
+  url: z.string().url(),
+});
+
+export function createBridgeRoutes() {
   return {
-    export: (req: Request, res: Response) => {
-      const sessionId = String(req.query.sessionId || "");
-      if (!sessionId) return res.status(400).json({ error: "sessionId required" });
-      const state = exportConversationState(db, sessionId) as ConversationState;
-      return res.json(state);
+    /**
+     * Imports a conversation from a URL, analyzes it, and stores it.
+     */
+    "import": async (req: Request, res: Response) => {
+      const parsed = importSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.flatten() });
+      }
+
+      try {
+        // 1. Parse conversation from URL
+        const { oracle, messages } = await parseConversationFromUrl(parsed.data.url);
+
+        // 2. Create conversation and messages in a transaction
+        const conversation = await prisma.conversation.create({
+          data: {
+            oracle,
+            messages: {
+              create: messages,
+            },
+          },
+          include: {
+            messages: true, // Include messages to pass to analysis
+          },
+        });
+
+        // 3. Analyze the full conversation
+        const analysis = analyzeConversation(conversation.messages);
+
+        // 4. Update the conversation with the analysis results
+        const updatedConversation = await prisma.conversation.update({
+          where: { id: conversation.id },
+          data: {
+            toneArc: analysis.toneArc,
+            coherenceScore: analysis.coherenceScore,
+            spiralScrolls: analysis.spiralScrolls.join(", "),
+            // We're not handling glyphs or tags in this pass
+          },
+        });
+
+        return res.json({
+          ok: true,
+          conversationId: updatedConversation.id,
+          analysis,
+        });
+      } catch (error: any) {
+        console.error("Import failed:", error);
+        return res.status(500).json({ error: error.message || "Import failed" });
+      }
     },
 
-    import: (req: Request, res: Response) => {
-      // In a fuller build, we would insert messages into a new session
-      // Here we validate payload shape and acknowledge
-      const payload = req.body as ConversationState | undefined;
-      if (!payload?.sessionId || !Array.isArray(payload.messages)) {
-        return res.status(400).json({ error: "invalid ConversationState" });
-      }
-      return res.json({ ok: true });
+    "export": (req: Request, res: Response) => {
+      const sessionId = String(req.query.sessionId || "");
+      if (!sessionId) return res.status(400).json({ error: "sessionId required" });
+      // TODO: Implement export logic using Prisma
+      return res.json({ ok: true, message: "Export not yet implemented." });
     },
 
     handoff: (req: Request, res: Response) => {
