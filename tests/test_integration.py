@@ -13,10 +13,10 @@ def mcp_server():
     """Fixture to start and stop the MCP server for the test module."""
     # Command to start the server
     # We need to install dependencies and run the compiled JS file
-    start_command = "cd mcp && npm install && npm run build && node dist/server.js"
+    start_command = "npm install && npm run build && node dist/server.js"
 
     # Start the server as a background process
-    server_process = subprocess.Popen(start_command, shell=True, preexec_fn=os.setsid)
+    server_process = subprocess.Popen(start_command, shell=True, preexec_fn=os.setsid, cwd="mcp")
 
     # Wait for the server to be healthy
     retries = 10
@@ -28,7 +28,18 @@ def mcp_server():
                 healthy = True
                 break
         except requests.ConnectionError:
-            time.sleep(3) # Wait 3 seconds before retrying
+                print(f"Health check attempt {i+1}/{retries} failed. Trying curl for diagnostics...")
+                try:
+                    # Use curl to get more network-level debug info
+                    curl_result = subprocess.run(
+                        ["curl", "-v", f"{MCP_URL}/health"],
+                        capture_output=True, text=True, timeout=5
+                    )
+                    print("Curl stdout:", curl_result.stdout)
+                    print("Curl stderr:", curl_result.stderr)
+                except (FileNotFoundError, subprocess.TimeoutExpired) as e:
+                    print(f"Curl command failed: {e}")
+                time.sleep(5) # Wait 5 seconds before retrying
 
     if not healthy:
         # If the server didn't start, kill the process and raise an error

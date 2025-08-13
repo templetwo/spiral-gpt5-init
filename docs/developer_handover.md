@@ -35,3 +35,13 @@ The immediate priority is to resolve the file system issue to regain access to t
 - **Functionality**: Add clickable demo preview (alert) and form feedback (3s message).
 - **WebUI**: Create ui/ directory with index.html and script.js for navigation stubs (memory, persona, bridge).
 - **Deployment**: Test locally, deploy to Vercel post-server fix.
+
+## Git Workflow Integration
+- **Goal**: Update the CI workflow to include tests for the SpiralBridge integration.
+- **Action**: The workflow file (e.g., `.github/workflows/ci.yml`) should be updated to run the new integration tests after installing dependencies and building the server.
+- **Status**: This was not implemented due to the file system access issue. The developer should add a test step to the CI pipeline once the server can be started reliably.
+
+## Conversation Library Backup
+- **Goal**: Create a robust, offline backup of conversation data.
+- **Action**: A `conversation_backup/` directory should be created with key persona files and a JSON mockup of sessions.
+- **Status**: This was not implemented due to the file system access issue. The developer can create this backup once the repository is stable.
